@@ -74,12 +74,13 @@ export function createChartData(
 export function createChartDataWithDynamicPeriods(
   dailyData: DataPoint[],
   selectedGovs: Set<string>,
-  governmentPeriods: Array<{ key: string; from: Date; to: Date }>
+  governmentPeriods: Array<{ key: string; from: Date; to: Date }>,
+  maxMonths: number = 48
 ): ChartDataPoint[] {
   const normalizedData: ChartDataPoint[] = [];
 
-  // Crear datos para 48 meses (período de gobierno) con comparación simultánea
-  for (let mes = 1; mes <= 48; mes++) {
+  // Crear datos para el número de meses especificado
+  for (let mes = 1; mes <= maxMonths; mes++) {
     const row: ChartDataPoint = { mes };
 
     governmentPeriods.forEach((gov) => {

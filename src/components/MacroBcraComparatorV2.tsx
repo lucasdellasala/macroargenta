@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MacroChart } from "@/components/charts/MacroChart";
 import { GovernmentFilter } from "@/components/ui/GovernmentFilter";
 import { Spinner } from "@/components/ui/Spinner";
+import { ComparisonModeToggle } from "@/components/ui/ComparisonModeToggle";
 import { VARIABLES, GOVS, MONTH_NAMES } from "@/constants/bcra";
 import { fetchVariableList, fetchVariableData } from "@/services/bcraApi";
 import { createChartDataWithDynamicPeriods } from "@/utils/dataProcessing";
@@ -31,6 +32,9 @@ export default function MacroBcraComparatorV2() {
   const [isPercentage, setIsPercentage] = useState(false);
   const [currentVariableConfig, setCurrentVariableConfig] =
     useState<VariableConfig | null>(null);
+  const [compareFullMandate, setCompareFullMandate] = useState(false);
+
+
   const windowWidth = useWindowWidth();
 
   // Limpiar cache expirado al montar el componente
@@ -85,11 +89,26 @@ export default function MacroBcraComparatorV2() {
     setLoading(true);
 
     try {
+      // Obtener períodos de gobierno con fechas dinámicas
+      const governmentPeriods = getGovernmentPeriods();
+
       // 1. Intentar obtener del cache
       const cached = getVariableFromCache(variableKey);
       if (cached) {
-        setChartData(createChartDataFromCache(cached));
-        // setCurrentUnits(variableConfig.units);
+        // Aplicar filtro de mes actual si no es mandato completo
+        const maxMonths = compareFullMandate ? 48 : getCurrentGovernmentMonth();
+
+
+
+        setChartData(
+          createChartDataWithDynamicPeriods(
+            cached.allData,
+            selectedGovs,
+            governmentPeriods,
+            maxMonths
+          )
+        );
+        // setCurrentUnits(variableConfig.isPercentage);
         setIsPercentage(variableConfig.isPercentage);
         setLoading(false);
         return;
@@ -102,9 +121,6 @@ export default function MacroBcraComparatorV2() {
         setLoading(false);
         return;
       }
-
-      // Obtener períodos de gobierno con fechas dinámicas
-      const governmentPeriods = getGovernmentPeriods();
 
       // Hacer requests paralelos solo para gobiernos seleccionados
       const requests = governmentPeriods
@@ -130,11 +146,18 @@ export default function MacroBcraComparatorV2() {
       // 4. Usar datos frescos con períodos dinámicos
       // setCurrentUnits(variableConfig.units);
       setIsPercentage(variableConfig.isPercentage);
+
+      // Aplicar filtro de mes actual si no es mandato completo
+      const maxMonths = compareFullMandate ? 48 : getCurrentGovernmentMonth();
+
+
+
       setChartData(
         createChartDataWithDynamicPeriods(
           allData,
           selectedGovs,
-          governmentPeriods
+          governmentPeriods,
+          maxMonths
         )
       );
     } catch (e: any) {
@@ -150,6 +173,25 @@ export default function MacroBcraComparatorV2() {
     if (value) {
       loadSelected(value);
     }
+  };
+
+  // Recargar datos cuando cambie el toggle de comparación
+  useEffect(() => {
+        if (selectedKey && !loading) {
+      // Usar setTimeout para evitar problemas de estado
+      setTimeout(() => {
+        loadSelected(selectedKey);
+      }, 0);
+    }
+  }, [compareFullMandate]);
+
+  // Calcular el mes actual del gobierno actual (Milei)
+  const getCurrentGovernmentMonth = () => {
+    const jmStartDate = new Date(2023, 11, 1); // 1 de diciembre 2023
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - jmStartDate.getTime());
+    const diffMonths = Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30.44)); // Promedio de días por mes
+    return Math.min(diffMonths - 1, 48); // Máximo 48 meses
   };
 
   // Get line name based on screen width
@@ -216,9 +258,9 @@ export default function MacroBcraComparatorV2() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="md:col-span-1">
             <CardHeader>
-                          <CardTitle className="text-text-primary">
-              Seleccionar Variable
-            </CardTitle>
+              <CardTitle className="text-text-primary">
+                Seleccionar variable Macroeconómica
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {/* Dropdown temporal para debug */}
@@ -239,9 +281,9 @@ export default function MacroBcraComparatorV2() {
 
           <Card className="md:col-span-2">
             <CardHeader>
-                          <CardTitle className="text-text-primary">
-              Filtro de Gobiernos
-            </CardTitle>
+              <CardTitle className="text-text-primary">
+                Filtro de Gobiernos
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <GovernmentFilter
@@ -264,9 +306,16 @@ export default function MacroBcraComparatorV2() {
             {chartData.length > 0 && (
               <Card className="my-6">
                 <CardHeader>
-                                  <CardTitle className="text-text-primary">
-                  Gráfico Comparativo
-                </CardTitle>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-text-primary">
+                      Gráfico Comparativo
+                    </CardTitle>
+                    <ComparisonModeToggle
+                      compareFullMandate={compareFullMandate}
+                      setCompareFullMandate={setCompareFullMandate}
+                      currentMonth={getCurrentGovernmentMonth()}
+                    />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <MacroChart
@@ -289,30 +338,30 @@ export default function MacroBcraComparatorV2() {
               Metodología
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-text-secondary">
-                              <div>
-                  <h4 className="font-medium text-text-primary mb-2">
-                    📊 Valores Mensuales
-                  </h4>
+              <div>
+                <h4 className="font-medium text-text-primary mb-2">
+                  📊 Valores Mensuales
+                </h4>
                 <p>
                   Para cada variable macroeconómica, se toma el valor del último
                   día de cada mes (30, 31, 28 o 29 según corresponda,
                   considerando años bisiestos).
                 </p>
               </div>
-                              <div>
-                  <h4 className="font-medium text-text-primary mb-2">
-                    ⏱️ Comparación por Meses de Gobierno
-                  </h4>
+              <div>
+                <h4 className="font-medium text-text-primary mb-2">
+                  ⏱️ Comparación por Meses de Gobierno
+                </h4>
                 <p>
                   Se comparan los primeros 48 meses de cada gobierno, alineando
                   el mes 1 de cada período para facilitar la comparación
                   temporal.
                 </p>
               </div>
-                              <div>
-                  <h4 className="font-medium text-text-primary mb-2">
-                    🌐 Fuente de Datos
-                  </h4>
+              <div>
+                <h4 className="font-medium text-text-primary mb-2">
+                  🌐 Fuente de Datos
+                </h4>
                 <p>
                   Todos los datos provienen de la API oficial del Banco Central
                   de la República Argentina (BCRA), garantizando la precisión y
