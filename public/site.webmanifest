@@ -1,0 +1,27 @@
+{
+  "name": "Macro Argenta",
+  "short_name": "Macro Argenta",
+  "description": "Comparador de variables macroeconómicas del BCRA entre diferentes gobiernos argentinos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAFAFA",
+  "theme_color": "#B71C1C",
+  "color_scheme": "light dark",
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}
