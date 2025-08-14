@@ -12,7 +12,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ChartDataPoint, VariableConfig } from "@/types/bcra";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useWindowWidth } from "@/hooks/useWindowWidth";
 import { formatLargeNumber } from "@/utils/numberUtils";
 
@@ -31,7 +30,6 @@ export function MacroChart({
   isPercentage = false,
   variableConfig
 }: MacroChartProps) {
-  const { isDark } = useTheme();
   const isMobile = useWindowWidth() < 640;
 
   // Colores para las líneas
@@ -80,13 +78,13 @@ export function MacroChart({
         >
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke={isDark ? "#374151" : "#E5E7EB"}
+            stroke="#E5E7EB"
           />
           
           <XAxis
             dataKey="mes"
             interval={11}
-            tick={{ fill: isDark ? "#FFFFFF" : "#000000" }}
+            tick={{ fill: "#000000" }}
             tickFormatter={(value) => {
               // Mostrar solo el número del mes (1, 2, 3... 48)
               return value.toString();
@@ -99,14 +97,14 @@ export function MacroChart({
               position: "bottom",
               style: {
                 textAnchor: "middle",
-                fill: isDark ? "#FFFFFF" : "#000000",
+                fill: "#000000",
                 fontSize: isMobile ? "12px" : "14px",
               },
             }}
           />
           
           <YAxis
-            tick={{ fill: isDark ? "#FFFFFF" : "#000000" }}
+            tick={{ fill: "#000000" }}
             tickFormatter={(value) => {
               if (isPercentage) {
                 return `${value}%`;
@@ -122,7 +120,7 @@ export function MacroChart({
               position: "left",
               style: {
                 textAnchor: "middle",
-                fill: isDark ? "#FFFFFF" : "#000000",
+                fill: "#000000",
                 fontSize: isMobile ? "12px" : "14px",
               },
             }}
@@ -131,12 +129,15 @@ export function MacroChart({
           
           <Tooltip
             contentStyle={{
-              backgroundColor: isDark ? "#1F2937" : "#FFFFFF",
-              border: `1px solid ${isDark ? "#374151" : "#E5E7EB"}`,
+              backgroundColor: "#FFFFFF",
+              border: "1px solid #E5E7EB",
               borderRadius: "8px",
-              color: isDark ? "#FFFFFF" : "#000000",
+              color: "#000000",
             }}
             formatter={(value: any, name: any, props: any) => {
+              // Debug: ver qué valores llegan
+              console.log('Tooltip formatter - name:', name, 'value:', value, 'props:', props);
+              
               // props.payload contiene la información completa del punto
               const { payload } = props;
               if (!payload) {
@@ -157,14 +158,33 @@ export function MacroChart({
                 return [formatValue(value), getLineName(name)];
               }
 
+              // Mapeo completo: nombre completo -> clave y clave -> clave
               const FULL_NAME_TO_KEY = {
                 "CFK 2°": "CFK2",
-                "Mauricio Macri": "MACRI",
+                "Mauricio Macri": "MACRI", 
                 "Alberto Fernández": "AF",
                 "Javier Milei": "JM",
+                // También mapear las claves directamente por si acaso
+                "CFK": "CFK2",
+                "Mauricio": "MACRI",
+                "Alberto": "AF", 
+                "Javier": "JM",
+                "Milei": "JM",
+                "Macri": "MACRI",
               }
               
-              const initialValue = firstMonthData[FULL_NAME_TO_KEY[name]];
+              const govKey = FULL_NAME_TO_KEY[name];
+              if (!govKey) {
+                // Si no encontramos la clave, mostrar solo el valor sin porcentaje
+                return [formatValue(value), getLineName(name)];
+              }
+              
+              const initialValue = firstMonthData[govKey];
+              if (initialValue === undefined || initialValue === null) {
+                // Si no hay valor inicial, mostrar solo el valor sin porcentaje
+                return [formatValue(value), getLineName(name)];
+              }
+              
               const percentageChange = ((currentValue - initialValue) / initialValue) * 100;
               const sign = percentageChange >= 0 ? "+" : "";
               const percentageText = `(${sign}${percentageChange.toFixed(1)}%)`;

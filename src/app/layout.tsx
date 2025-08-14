@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/contexts/ThemeContext";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -36,10 +36,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.className} bg-background-light dark:bg-background-dark text-text-primary dark:text-text-primary-dark transition-colors duration-200`}>
-        <ThemeProvider>
-          {children}
-        </ThemeProvider>
+              <body className={`${inter.className} bg-background-light text-text-primary transition-colors duration-200`}>
+        {children}
       </body>
     </html>
   );

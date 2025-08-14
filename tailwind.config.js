@@ -1,10 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
     './components/**/*.{ts,tsx}',
-    './app/**/*.{ts,tsx}',
+    './app/**/*.{ts,tsx}',  
     './src/**/*.{ts,tsx}',
   ],
   theme: {
@@ -32,18 +31,13 @@ module.exports = {
         // Fondo y superficies
         background: {
           light: '#FAFAFA',   // fondo principal claro
-          dark: '#1E1E1E',    // modo oscuro base
           card: '#FFFFFF',    // fondo de tarjetas
-          'card-dark': '#2D2D2D', // fondo de tarjetas en modo oscuro
         },
 
         // Texto
         text: {
           primary: '#000000', // texto principal
           secondary: '#4A4A4A', // texto gris medio
-          light: '#FFFFFF',   // texto sobre fondos oscuros
-          'primary-dark': '#FFFFFF', // texto principal en modo oscuro
-          'secondary-dark': '#B0B0B0', // texto secundario en modo oscuro
         },
 
         // Estados

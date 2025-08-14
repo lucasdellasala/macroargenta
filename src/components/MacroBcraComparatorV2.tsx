@@ -158,6 +158,13 @@ export default function MacroBcraComparatorV2() {
     if (!gov) return govKey;
 
     if (windowWidth < 640) {
+      // if Milei put Milei instead of Javier, if Mauricio put Macri instead of Mauricio
+      if (govKey === "JM") {
+        return "Milei";
+      }
+      if (govKey === "MACRI") {
+        return "Macri";
+      }
       return gov.label.split(" ")[0]; // Tomar solo la primera palabra para móvil
     }
     return gov.label; // Nombre completo para desktop
@@ -185,7 +192,7 @@ export default function MacroBcraComparatorV2() {
   }, [selectedKey, selectedGovs]);
 
   return (
-    <div className="min-h-screen bg-background-light dark:bg-background-dark">
+    <div className="min-h-screen bg-background-light">
       <div className="container mx-auto px-4 py-8">
         <header className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -195,10 +202,10 @@ export default function MacroBcraComparatorV2() {
               className="h-16 w-auto"
             />
           </div>
-          <h1 className="text-4xl font-bold text- dark:text-text-primary-dark mb-4">
+          <h1 className="text-4xl font-bold text-text-primary mb-4">
             Macro <span className="text-[#B71C1C]">Argenta</span>
           </h1>
-          <p className="text-sm text-text-secondary dark:text-text-secondary-dark max-w-3xl mx-auto mb-4">
+          <p className="text-sm text-text-secondary max-w-3xl mx-auto mb-4">
             Comparador de variables macroeconómicas del BCRA entre diferentes
             gobiernos argentinos. Agrupación mensual por último dato del mes.
             Milei truncado en {MONTH_NAMES[new Date().getMonth() - 1]}{" "}
@@ -209,16 +216,16 @@ export default function MacroBcraComparatorV2() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card className="md:col-span-1">
             <CardHeader>
-              <CardTitle className="text-text-primary dark:text-text-primary-dark">
-                Seleccionar Variable
-              </CardTitle>
+                          <CardTitle className="text-text-primary">
+              Seleccionar Variable
+            </CardTitle>
             </CardHeader>
             <CardContent>
               {/* Dropdown temporal para debug */}
               <select
                 value={selectedKey}
                 onChange={(e) => handleVariableChange(e.target.value)}
-                className="w-full p-2 border rounded bg-background-card dark:bg-background-card-dark text-text-primary dark:text-text-primary-dark"
+                className="w-full p-2 border rounded bg-background-card text-text-primary"
               >
                 <option value="">Elegir variable</option>
                 {VARIABLES.map((s) => (
@@ -232,9 +239,9 @@ export default function MacroBcraComparatorV2() {
 
           <Card className="md:col-span-2">
             <CardHeader>
-              <CardTitle className="text-text-primary dark:text-text-primary-dark">
-                Filtro de Gobiernos
-              </CardTitle>
+                          <CardTitle className="text-text-primary">
+              Filtro de Gobiernos
+            </CardTitle>
             </CardHeader>
             <CardContent>
               <GovernmentFilter
@@ -257,9 +264,9 @@ export default function MacroBcraComparatorV2() {
             {chartData.length > 0 && (
               <Card className="my-6">
                 <CardHeader>
-                  <CardTitle className="text-text-primary dark:text-text-primary-dark">
-                    Gráfico Comparativo
-                  </CardTitle>
+                                  <CardTitle className="text-text-primary">
+                  Gráfico Comparativo
+                </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <MacroChart
@@ -276,36 +283,36 @@ export default function MacroBcraComparatorV2() {
         )}
 
         {/* Footer con explicación metodológica */}
-        <footer className="mt-12 py-8 border-t border-secondary-light/20 dark:border-secondary-light/30">
+        <footer className="mt-12 py-8 border-t border-secondary-light/20">
           <div className="max-w-4xl mx-auto text-center">
-            <h3 className="text-lg font-semibold text-text-primary dark:text-text-primary-dark mb-4">
+            <h3 className="text-lg font-semibold text-text-primary mb-4">
               Metodología
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-text-secondary dark:text-text-secondary-dark">
-              <div>
-                <h4 className="font-medium text-text-primary dark:text-text-primary-dark mb-2">
-                  📊 Valores Mensuales
-                </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-text-secondary">
+                              <div>
+                  <h4 className="font-medium text-text-primary mb-2">
+                    📊 Valores Mensuales
+                  </h4>
                 <p>
                   Para cada variable macroeconómica, se toma el valor del último
                   día de cada mes (30, 31, 28 o 29 según corresponda,
                   considerando años bisiestos).
                 </p>
               </div>
-              <div>
-                <h4 className="font-medium text-text-primary dark:text-text-primary-dark mb-2">
-                  ⏱️ Comparación por Meses de Gobierno
-                </h4>
+                              <div>
+                  <h4 className="font-medium text-text-primary mb-2">
+                    ⏱️ Comparación por Meses de Gobierno
+                  </h4>
                 <p>
                   Se comparan los primeros 48 meses de cada gobierno, alineando
                   el mes 1 de cada período para facilitar la comparación
                   temporal.
                 </p>
               </div>
-              <div>
-                <h4 className="font-medium text-text-primary dark:text-text-primary-dark mb-2">
-                  🌐 Fuente de Datos
-                </h4>
+                              <div>
+                  <h4 className="font-medium text-text-primary mb-2">
+                    🌐 Fuente de Datos
+                  </h4>
                 <p>
                   Todos los datos provienen de la API oficial del Banco Central
                   de la República Argentina (BCRA), garantizando la precisión y
